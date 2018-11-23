@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {
     StyleSheet, Text, View,
-    TextInput, TouchableOpacity, Alert
+    TextInput, TouchableOpacity, Alert,
+    ListView, ActivityIndicator,
 } from 'react-native';
 
 import { createStackNavigator } from 'react-navigation';
@@ -45,6 +46,10 @@ class InputUsers extends Component{
               console.error(error);
           } )
     }
+
+    ViewUsersList = () => {
+        this.props.navigation.navigate('Second');
+    }
     
     render() {
         return (
@@ -70,13 +75,108 @@ class InputUsers extends Component{
             <TouchableOpacity activeOpacity={.4} style={styles.TouchableOpacityStyle} onPress={ this.InsertUsers } >
                 <Text style={ styles.TextStyle } >SIMPAN</Text>
             </TouchableOpacity>
+            <TouchableOpacity activeOpacity={.4} style={styles.TouchableOpacityStyle} onPress={ this.ViewUsersList } >
+                <Text style={ styles.TextStyle } >List Data</Text>
+            </TouchableOpacity>
         </View>
         );
     }
 }
 
+class ViewDataUsers extends Component {
+    static navigationOptions = {
+        title: 'Data Users'
+    }
+
+    constructor(props) {
+      super(props)
+      this.state = {
+         isLoading: true
+      }
+    }
+
+    componentDidMount() {
+        return fetch('http://riogunawan/crud/data.html')
+                .then( (response) => response.json() )
+                .then( (responseJson) => {
+                    let ds = new ListView.DataSource({
+                        rowHasChanged: (r1, r2) => r1 !== r2
+                    })
+                    this.setState({
+                        isLoading: false,
+                        dataSource: ds.cloneWithRows(responseJson)
+                    }, function() {})
+                } ).catch( (error) => {
+                    console.error(error);
+                } )
+    }
+    
+    Action_Click(id, name, email, phone_number) {
+        // this.props.navigation.navigate('three', {
+        //     id: id,
+        //     name: name,
+        //     email: email,
+        //     phone_number: phone_number,
+        // })
+        Alert.alert(email);
+    }
+
+    ListViewItemSeparator = () => {
+        return (
+            <View
+                style = {{
+                    height: 0.5,
+                    width: '100%',
+                    backgroundColor: '#2196F3'
+                }}
+            />
+        )
+    }
+
+    render(){
+        if (this.state.isLoading) {
+            return(
+                <View style={{ flex: 1, paddingTop: 20 }}>
+                    <ActivityIndicator/>
+                </View>
+            )
+        }
+        return(
+            <View style={ styles.ContainerDataUsers } >
+                <ListView
+                    dataSource = { this.state.dataSource }
+                    renderSeparator = { this.ListViewItemSeparator }
+                    renderRow = { (rowData) =>
+                        <Text
+                            style={ styles.rowViewContainer }
+                            onPress={ this.Action_Click.bind(this,
+                                    rowData.id,
+                                    rowData.name,
+                                    rowData.email,
+                                    rowData.phone_number,
+                                ) }
+                        >
+                            { rowData.name }
+                        </Text>
+                    }
+                />
+            </View>
+        )
+    }
+}
+
+class UpdateDataUser extends Component {
+    render() {
+        return(
+            <View></View>
+        )
+    }
+}
+
 export default App1 = createStackNavigator({
-    First: { screen: InputUsers }
+    First: { screen: InputUsers },
+    Second: { screen: ViewDataUsers },
+    Three: { screen: UpdateDataUser },
 });
 
 const styles = StyleSheet.create({
@@ -107,4 +207,17 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#00BCD4',
   },
+  ContainerDataUsers: {
+    flex: 1,
+    paddingTop: 20,
+    marginLeft: 5,
+    marginRight: 5,
+  },
+  rowViewContainer: {
+    textAlign: 'center',
+    fontSize: 20,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+  }
 });

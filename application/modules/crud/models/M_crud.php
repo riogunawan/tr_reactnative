@@ -7,6 +7,10 @@ class M_crud extends CI_Model {
 		parent::__construct();
 	}
 
+	public function data() {
+		return $this->db->get('users');
+	}
+
 	public function add ($data) {
 		$this->db->insert('users', $data);
 		return $this->db->insert_id();

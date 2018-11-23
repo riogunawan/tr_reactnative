@@ -18,7 +18,29 @@ class Crud extends MX_Controller {
 		echo "$this->title";
 	}
 
-	public function insert () {
+	public function data() {
+		$data = $this->M_app->data();
+
+		if ($data->num_rows() > 0) {
+			$data_json = array();
+			foreach($data->result_array() as $row){
+			    $data = array(
+		    		'id' => $row['id'],
+		    		'name' => $row['name'],
+		    		'email' => $row['email'],
+		    		'phone_number' => $row['phone_number'],
+		    	);
+
+		    	array_push($data_json, $data);
+			}
+			$json = json_encode($data_json);
+		} else {
+			$json = json_encode(array('error' => 'data tidak ada'));
+		}
+		echo $json;
+	}
+
+	public function insert() {
 		$stat = false;
 
 		$json = file_get_contents('php://input');
